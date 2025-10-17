@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:trashpick_project/screens/educ_page.dart';
+import 'package:trashpick_project/screens/educ_screen.dart';
+import 'package:trashpick_project/screens/announcement_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -8,7 +9,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -60,10 +60,20 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const EducPage()),
+                  MaterialPageRoute(builder: (context) => const EducScreen()),
                 );
               },
               child: const Text('Go to Education Page'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AnnouncementScreen()),
+                );
+              },
+              child: const Text('Go to Announcements'),
             ),
           ],
         ),

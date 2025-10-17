@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class EducPage extends StatelessWidget {
-  const EducPage({super.key});
+class EducScreen extends StatelessWidget {
+  const EducScreen({super.key});
 
   final Color primaryGreen = const Color(0xFF00A651);
 
