@@ -38,14 +38,15 @@ class AnnouncementScreen extends StatelessWidget {
                 ],
               ),
             ),
-            Divider(color: primaryGreen.withOpacity(0.5), thickness: 1),
+            Divider(color: primaryGreen.withAlpha(128), thickness: 1),
             const SizedBox(height: 24),
+
 
             // This week's announcement
             Container(
               padding: const EdgeInsets.symmetric(vertical: 28.0, horizontal: 20.0),
               decoration: BoxDecoration(
-                color: primaryGreen.withOpacity(0.1),
+                color: primaryGreen.withAlpha(26),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: primaryGreen),
               ),
@@ -213,7 +214,7 @@ class AnnouncementScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
+      ), 
     );
   }
 }
