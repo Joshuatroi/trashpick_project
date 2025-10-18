@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trashpick_project/screens/educ_screen.dart';
 import 'package:trashpick_project/screens/announcement_screen.dart';
+import 'package:trashpick_project/screens/official_dashboard.dart';
 
 void main() {
   runApp(const MyApp());
@@ -74,6 +75,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: const Text('Go to Announcements'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const OfficialDashboard()),
+                );
+              },
+              child: const Text('Go to Official Dashboard'),
             ),
           ],
         ),

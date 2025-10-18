@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trashpick_project/widgets/bottom_nav_bar.dart';
 
 class AnnouncementScreen extends StatelessWidget {
   const AnnouncementScreen({super.key});
@@ -153,6 +154,12 @@ class AnnouncementScreen extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: 1, // Set to 1 for Schedule
+        onTap: (index) {
+          // TODO: Handle navigation
+        },
+      ),
     );
   }
 
@@ -214,7 +221,7 @@ class AnnouncementScreen extends StatelessWidget {
             ),
           ),
         ],
-      ), 
+      ),
     );
   }
 }
