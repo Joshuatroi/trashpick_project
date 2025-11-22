@@ -105,10 +105,11 @@ class _WasteReportingPageState extends State<WasteReportingPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFF7FAFA),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: Colors.black87),
+        //   onPressed: () => Navigator.pop(context),
+        // ),
         title: const Text(
           "Report Issue",
           style: TextStyle(
