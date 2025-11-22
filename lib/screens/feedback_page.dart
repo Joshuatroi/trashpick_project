@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'waste_reporting_page.dart';
-import 'resident_profile_page.dart';
 // You can replace these imports with your actual Home and Schedule pages
 // e.g., import 'home_page.dart'; import 'schedule_page.dart';
 
@@ -13,7 +11,6 @@ class FeedbackPage extends StatefulWidget {
 
 class _FeedbackPageState extends State<FeedbackPage> {
   final TextEditingController _feedbackController = TextEditingController();
-  int _selectedIndex = 3; // Profile selected
 
   void _submitFeedback() {
     final feedback = _feedbackController.text.trim();
@@ -33,43 +30,15 @@ class _FeedbackPageState extends State<FeedbackPage> {
     _feedbackController.clear();
   }
 
-  // Navigation handler for bottom nav items
-  void _onNavTapped(int index) {
-    if (index == _selectedIndex) return; // Do nothing if already on the page
-    setState(() => _selectedIndex = index);
-
-    switch (index) {
-      // case 0: // Home
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(builder: (context) => const PlaceholderHomePage()),
-      //   );
-      //   break;
-      // case 1: // Schedule
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(
-      //       builder: (context) => const PlaceholderSchedulePage(),
-      //     ),
-      //   );
-      //   break;
-      case 2: // Report
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const WasteReportingPage()),
-        );
-        break;
-      case 3: // Profile
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const ResidentProfilePage()),
-        );
-        break;
-    }
-  }
+  // ... (rest of the class before build method remains the same)
 
   @override
   Widget build(BuildContext context) {
+    // Use a fixed height or a proportional height for the feedback box
+    final screenHeight = MediaQuery.of(context).size.height;
+    final feedbackBoxHeight =
+        screenHeight * 0.3; // Example: 30% of screen height
+
     return Scaffold(
       backgroundColor: Colors.white,
 
@@ -95,22 +64,30 @@ class _FeedbackPageState extends State<FeedbackPage> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            // Feedback box
-            Expanded(
+            // 👇 FIX APPLIED HERE: Replace Expanded with a Container/SizedBox for a defined height
+            Container(
+              height: feedbackBoxHeight, // Use the calculated height
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F2ED),
+                borderRadius: BorderRadius.circular(8),
+              ),
               child: TextField(
                 controller: _feedbackController,
-                maxLines: null,
-                expands: true,
+                // Since height is fixed, we can remove expands: true
+                maxLines: null, // Allow multiple lines
                 textAlignVertical: TextAlignVertical.top,
                 decoration: InputDecoration(
                   hintText: "Enter your feedback or suggestions",
                   hintStyle: const TextStyle(color: Colors.grey),
-                  filled: true,
-                  fillColor: const Color(0xFFE8F2ED),
+                  contentPadding: const EdgeInsets.all(
+                    16,
+                  ), // Add padding inside
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
                   ),
+                  filled: true,
+                  fillColor: const Color(0xFFE8F2ED),
                 ),
               ),
             ),
@@ -137,34 +114,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
             ),
           ],
         ),
-      ),
-
-      // Bottom navigation
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color(0xFF1CC961),
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: true,
-        onTap: _onNavTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined),
-            label: "Schedule",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.report_outlined),
-            label: "Report",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: "Profile",
-          ),
-        ],
       ),
     );
   }

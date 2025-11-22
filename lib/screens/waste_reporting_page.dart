@@ -16,6 +16,8 @@ class _WasteReportingPageState extends State<WasteReportingPage> {
   final TextEditingController locationController = TextEditingController();
   XFile? imageFile;
 
+  int _selectedIndex = 2; // Profile selected
+
   Future<void> pickImage() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
@@ -96,6 +98,41 @@ class _WasteReportingPageState extends State<WasteReportingPage> {
     setState(() => imageFile = null);
   }
 
+  // Navigation handler for bottom nav items
+  void _onNavTapped(int index) {
+    if (index == _selectedIndex) return; // Do nothing if already on the page
+    setState(() => _selectedIndex = index);
+
+    switch (index) {
+      // case 0: // Home
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(builder: (context) => const PlaceholderHomePage()),
+      //   );
+      //   break;
+      // case 1: // Schedule
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(
+      //       builder: (context) => const PlaceholderSchedulePage(),
+      //     ),
+      //   );
+      //   break;
+      case 2: // Report
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const WasteReportingPage()),
+        );
+        break;
+      // case 3: // Profile
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(builder: (context) => const ResidentProfilePage()),
+      //   );
+      //   break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,7 +142,6 @@ class _WasteReportingPageState extends State<WasteReportingPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFF7FAFA),
         elevation: 0,
-        automaticallyImplyLeading: false,
         // leading: IconButton(
         //   icon: const Icon(Icons.arrow_back, color: Colors.black87),
         //   onPressed: () => Navigator.pop(context),
@@ -242,6 +278,33 @@ class _WasteReportingPageState extends State<WasteReportingPage> {
             ),
           ],
         ),
+      ),
+
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        selectedItemColor: const Color(0xFF1CC961),
+        unselectedItemColor: Colors.grey,
+        showSelectedLabels: true,
+        onTap: _onNavTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: "Home",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today_outlined),
+            label: "Schedule",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.report_outlined),
+            label: "Report",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: "Profile",
+          ),
+        ],
       ),
     );
   }
