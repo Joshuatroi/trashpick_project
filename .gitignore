@@ -43,3 +43,24 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase configuration files
+# IMPORTANT: These files contain private API keys and should NEVER be checked into version control.
+/android/app/google-services.json
+/ios/Runner/GoogleService-Info.plist
+
+# Ignore VSCode settings
+.vscode/
+
+# Firebase auto-generated config
+firebase.json
+lib/firebase_options.dart
+
+# Flutter auto-generated plugin registrant files
+**/GeneratedPluginRegistrant.*
+**/generated_plugin_registrant.*
+**/generated_plugins.*
+
+# Extra safety: ignore any JSON config you didn't create manually
+*.flutter-plugins
+*.flutter-plugins-dependencies
