@@ -3,8 +3,9 @@ import 'package:provider/provider.dart';
 import 'controller/theme_controller.dart'; // adjust path if needed
 import 'screens/official_profile_page.dart';
 // import 'screens/resident_profile_page.dart';
-// import 'screens/waste_reporting_page.dart';
-// import 'screens/feedback_page.dart';
+import 'screens/waste_reporting_page.dart';
+import 'screens/feedback_page.dart';
+
 
 void main() {
   runApp(
@@ -34,7 +35,9 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF121212),
         appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF1E1E1E)),
       ),
-      home: const OfficialProfilePage(),
+      home: const WasteReportingPage(),
     );
   }
+}
+
 }
