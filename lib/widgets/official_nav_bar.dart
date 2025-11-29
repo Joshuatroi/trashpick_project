@@ -32,7 +32,7 @@ class OfficialNavBar extends StatelessWidget {
             _buildNavItem(
               icon: Icons.map_outlined,
               activeIcon: Icons.map,
-              label: 'Routes',
+              label: 'Schedules',
               index: 1,
             ),
             _buildNavItem(

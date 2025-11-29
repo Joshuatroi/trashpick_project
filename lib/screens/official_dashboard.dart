@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:trashpick_project/screens/official_routes.dart';
+import 'package:trashpick_project/screens/official_schedule.dart'; // updated
 import 'package:trashpick_project/screens/official_reports.dart';
 import 'package:trashpick_project/screens/official_announcement.dart';
 import 'package:trashpick_project/screens/official_profile_screen.dart';
@@ -19,7 +19,7 @@ class _OfficialDashboardState extends State<OfficialDashboard> {
   // Define the screens and their titles
   final List<Widget> _screens = [
     const DashboardContent(),
-    const OfficialRoutes(),
+    const OfficialSchedule(), // updated
     const OfficialReports(),
     const OfficialAnnouncement(),
     const OfficialProfileScreen(),
@@ -27,7 +27,7 @@ class _OfficialDashboardState extends State<OfficialDashboard> {
 
   final List<String> _titles = [
     'Dashboard',
-    'Routes',
+    'Schedule', // updated
     'Reports',
     'Announcements',
     'Profile',
@@ -45,9 +45,7 @@ class _OfficialDashboardState extends State<OfficialDashboard> {
     return PopScope(
       canPop: _currentIndex == 0,
       onPopInvokedWithResult: (bool didPop, dynamic result) {
-        if (didPop) {
-          return;
-        }
+        if (didPop) return;
         _onTabTapped(0);
       },
       child: Scaffold(
@@ -56,14 +54,13 @@ class _OfficialDashboardState extends State<OfficialDashboard> {
           centerTitle: true,
           backgroundColor: Colors.white,
           elevation: 1,
-          // Explicitly control the leading widget (back button)
-          automaticallyImplyLeading: false, // Turn off automatic back button
+          automaticallyImplyLeading: false,
           leading: _currentIndex != 0
               ? IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => _onTabTapped(0),
                 )
-              : null, // No leading widget on the main dashboard tab
+              : null,
         ),
         body: PageView(
           controller: _pageController,
@@ -72,7 +69,6 @@ class _OfficialDashboardState extends State<OfficialDashboard> {
               _currentIndex = index;
             });
           },
-          // Pass the tab controller to the DashboardContent
           children: [DashboardContent(onTabTapped: _onTabTapped), ..._screens.sublist(1)],
         ),
         bottomNavigationBar: OfficialNavBar(
@@ -84,7 +80,6 @@ class _OfficialDashboardState extends State<OfficialDashboard> {
   }
 }
 
-// The original dashboard content now takes a callback to control the tabs
 class DashboardContent extends StatelessWidget {
   final Function(int)? onTabTapped;
   const DashboardContent({super.key, this.onTabTapped});
@@ -149,7 +144,7 @@ class DashboardContent extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildOverviewItem('12', 'Routes'),
+                      _buildOverviewItem('12', 'Schedules'), // updated
                       _buildOverviewItem('86', 'Reports'),
                       _buildOverviewItem('14', 'Pending'),
                     ],
@@ -176,7 +171,12 @@ class DashboardContent extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _buildQuickActionButton(context, icon: Icons.map_outlined, label: 'Routes', index: 1),
+                _buildQuickActionButton(
+                  context,
+                  icon: Icons.schedule_outlined, // updated
+                  label: 'Schedule', // updated
+                  index: 1,
+                ),
                 _buildQuickActionButton(context, icon: Icons.campaign_outlined, label: 'Announce', index: 3),
                 _buildQuickActionButton(context, icon: Icons.folder_open_outlined, label: 'Reports', index: 2),
                 _buildQuickActionButton(context, icon: Icons.person_outline, label: 'Profile', index: 4),
@@ -184,19 +184,19 @@ class DashboardContent extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            // Active Routes Section
+            // Active Schedule Section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Active Routes',
+                  'Active Schedules', // updated
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: primaryGreen,
                   ),
                 ),
-                 TextButton(
+                TextButton(
                   onPressed: () => onTabTapped?.call(1),
                   child: Text(
                     'View All',
@@ -206,14 +206,14 @@ class DashboardContent extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            _buildActiveRouteCard(
-              routeName: 'North District',
+            _buildActiveScheduleCard(
+              scheduleName: 'North District',
               wasteType: 'Recyclable',
               timePeriod: '6:00 AM - 10:00 AM',
               status: 'Ongoing',
             ),
-            _buildActiveRouteCard(
-              routeName: 'South Commercial Zone',
+            _buildActiveScheduleCard(
+              scheduleName: 'South Commercial Zone',
               wasteType: 'Biodegradable',
               timePeriod: '8:00 AM - 12:00 PM',
               status: 'Starting Soon',
@@ -224,7 +224,7 @@ class DashboardContent extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                 Text(
+                Text(
                   'Recent Reports',
                   style: TextStyle(
                     fontSize: 24,
@@ -233,7 +233,7 @@ class DashboardContent extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                   onPressed: () => onTabTapped?.call(2),
+                  onPressed: () => onTabTapped?.call(2),
                   child: Text(
                     'View All',
                     style: TextStyle(color: primaryGreen, fontWeight: FontWeight.w600),
@@ -254,7 +254,7 @@ class DashboardContent extends StatelessWidget {
               title: 'Overflowing bin at Central Park',
               subtitle: 'Reported 2 hours ago',
             ),
-            const SizedBox(height: 20), // Padding at the end
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -310,9 +310,9 @@ class DashboardContent extends StatelessWidget {
       ),
     );
   }
-  
-  Widget _buildActiveRouteCard({
-    required String routeName,
+
+  Widget _buildActiveScheduleCard({
+    required String scheduleName,
     required String wasteType,
     required String timePeriod,
     required String status,
@@ -323,7 +323,7 @@ class DashboardContent extends StatelessWidget {
     } else if (wasteType == 'Biodegradable') {
       wasteColor = Colors.green;
     } else if (wasteType == 'Non-Biodegradable') {
-        wasteColor = Colors.black87;
+      wasteColor = Colors.black87;
     }
 
     return Card(
@@ -340,7 +340,7 @@ class DashboardContent extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    routeName,
+                    scheduleName,
                     style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.bold,

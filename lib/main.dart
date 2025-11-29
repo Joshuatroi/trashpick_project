@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'auth_wrapper.dart';
 import 'package:provider/provider.dart';
 import 'controller/theme_controller.dart'; // adjust path if needed
+import 'screens/admin_dashboard.dart'; // <-- change this to AdminDashboard
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
           unselectedItemColor: Color(0xFF00A651),
         ),
       ),
-      home: const AuthWrapper(), // Handles routing to Admin/Official/Resident dashboards
+      home: const AdminDashboard(), // <-- change this to AdminDashboard
     );
   }
 }
