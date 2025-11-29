@@ -3,7 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'screens/home_screen.dart';
+import 'screens/official_dashboard.dart';
+import 'screens/admin_dashboard.dart';
 import 'screens/login_screen.dart';
 import 'services/auth_service.dart';
 
@@ -20,41 +21,50 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.active) {
           final User? user = snapshot.data;
 
-          // If user is null, they are logged out, show LoginScreen
+          // User is logged out
           if (user == null) {
             return const LoginScreen();
           }
 
-          // If user is not null, we need to verify their role before showing HomeScreen
+          // User is logged in, fetch role from Firestore
           return FutureBuilder<DocumentSnapshot>(
             future: FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
             builder: (context, userDocSnapshot) {
-              // Show loading while fetching user data
+              // Loading indicator while fetching
               if (userDocSnapshot.connectionState == ConnectionState.waiting) {
                 return const Scaffold(
-                  body: Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  body: Center(child: CircularProgressIndicator()),
                 );
               }
 
-              // If user data doesn't exist, sign them out and show login
+              // If user data doesn't exist, sign out
               if (!userDocSnapshot.hasData || !userDocSnapshot.data!.exists) {
                 authService.signOut();
                 return const LoginScreen();
               }
 
-              // User data exists and is valid, show HomeScreen
-              return const HomeScreen();
+              // Get user role
+              final userData = userDocSnapshot.data!.data() as Map<String, dynamic>;
+              final role = userData['role'] ?? 'official'; // default to official if role missing
+
+              // Route based on role (focusing on admin and official for now)
+              if (role == 'official') {
+                return const OfficialDashboard();
+              } else if (role == 'admin') {
+                return const AdminDashboard();
+              } else {
+                // Unknown or unsupported role
+                return const Scaffold(
+                  body: Center(child: Text('Access denied')),
+                );
+              }
             },
           );
         }
 
-        // While waiting for auth connection, show a loading indicator
+        // Waiting for auth connection
         return const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
+          body: Center(child: CircularProgressIndicator()),
         );
       },
     );

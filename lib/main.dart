@@ -4,18 +4,13 @@ import 'firebase_options.dart';
 import 'auth_wrapper.dart';
 import 'package:provider/provider.dart';
 import 'controller/theme_controller.dart'; // adjust path if needed
-import 'screens/official_profile_page.dart';
-// import 'screens/resident_profile_page.dart';
-import 'screens/waste_reporting_page.dart';
-import 'screens/feedback_page.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
-void main() {
+
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeController(),
@@ -37,15 +32,31 @@ class MyApp extends StatelessWidget {
       themeMode: themeController.themeMode,
       theme: ThemeData.light().copyWith(
         scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(backgroundColor: Colors.white),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          iconTheme: IconThemeData(color: Colors.black),
+          elevation: 1,
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+          selectedItemColor: Color(0xFF00A651),
+          unselectedItemColor: Color(0xFF00A651),
+        ),
       ),
       darkTheme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF121212),
-        appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF1E1E1E)),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF1E1E1E),
+          iconTheme: IconThemeData(color: Colors.white),
+          elevation: 1,
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Color(0xFF1E1E1E),
+          selectedItemColor: Color(0xFF00A651),
+          unselectedItemColor: Color(0xFF00A651),
+        ),
       ),
-      home: const WasteReportingPage(),
+      home: const AuthWrapper(), // Handles routing to Admin/Official/Resident dashboards
     );
   }
 }
-
-
