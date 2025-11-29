@@ -6,7 +6,6 @@ import 'screens/official_profile_page.dart';
 import 'screens/waste_reporting_page.dart';
 import 'screens/feedback_page.dart';
 
-
 void main() {
   runApp(
     ChangeNotifierProvider(
@@ -38,6 +37,4 @@ class MyApp extends StatelessWidget {
       home: const WasteReportingPage(),
     );
   }
-}
-
 }
