@@ -32,7 +32,7 @@ class OfficialNavBar extends StatelessWidget {
             _buildNavItem(
               icon: Icons.map_outlined,
               activeIcon: Icons.map,
-              label: 'Routes',
+              label: 'Schedule',
               index: 1,
             ),
             _buildNavItem(
@@ -68,7 +68,8 @@ class OfficialNavBar extends StatelessWidget {
     final bool isSelected = currentIndex == index;
     return GestureDetector(
       onTap: () => onTap(index),
-      behavior: HitTestBehavior.translucent, // Ensures the whole area is tappable
+      behavior:
+          HitTestBehavior.translucent, // Ensures the whole area is tappable
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(

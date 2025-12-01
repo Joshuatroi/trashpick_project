@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:trashpick_project/screens/official_routes.dart';
+import 'package:trashpick_project/screens/official_schedule.dart'; // updated
 import 'package:trashpick_project/screens/official_reports.dart';
 import 'package:trashpick_project/screens/official_announcement.dart';
 import 'package:trashpick_project/screens/official_profile_screen.dart';
@@ -19,7 +19,7 @@ class _OfficialDashboardState extends State<OfficialDashboard> {
   // Define the screens and their titles
   final List<Widget> _screens = [
     const DashboardContent(),
-    const OfficialRoutes(),
+    const OfficialSchedule(), // updated
     const OfficialReports(),
     const OfficialAnnouncement(),
     const OfficialProfileScreen(),
@@ -27,7 +27,7 @@ class _OfficialDashboardState extends State<OfficialDashboard> {
 
   final List<String> _titles = [
     'Dashboard',
-    'Routes',
+    'Schedule', // updated
     'Reports',
     'Announcements',
     'Profile',
@@ -45,25 +45,25 @@ class _OfficialDashboardState extends State<OfficialDashboard> {
     return PopScope(
       canPop: _currentIndex == 0,
       onPopInvokedWithResult: (bool didPop, dynamic result) {
-        if (didPop) {
-          return;
-        }
+        if (didPop) return;
         _onTabTapped(0);
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_titles[_currentIndex], style: const TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(
+            _titles[_currentIndex],
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           centerTitle: true,
           backgroundColor: Colors.white,
           elevation: 1,
-          // Explicitly control the leading widget (back button)
-          automaticallyImplyLeading: false, // Turn off automatic back button
+          automaticallyImplyLeading: false,
           leading: _currentIndex != 0
               ? IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => _onTabTapped(0),
                 )
-              : null, // No leading widget on the main dashboard tab
+              : null,
         ),
         body: PageView(
           controller: _pageController,
@@ -72,8 +72,10 @@ class _OfficialDashboardState extends State<OfficialDashboard> {
               _currentIndex = index;
             });
           },
-          // Pass the tab controller to the DashboardContent
-          children: [DashboardContent(onTabTapped: _onTabTapped), ..._screens.sublist(1)],
+          children: [
+            DashboardContent(onTabTapped: _onTabTapped),
+            ..._screens.sublist(1),
+          ],
         ),
         bottomNavigationBar: OfficialNavBar(
           currentIndex: _currentIndex,
@@ -84,7 +86,6 @@ class _OfficialDashboardState extends State<OfficialDashboard> {
   }
 }
 
-// The original dashboard content now takes a callback to control the tabs
 class DashboardContent extends StatelessWidget {
   final Function(int)? onTabTapped;
   const DashboardContent({super.key, this.onTabTapped});
@@ -116,10 +117,7 @@ class DashboardContent extends StatelessWidget {
                   const SizedBox(height: 4),
                   const Text(
                     'Barangay [Your Barangay Name]',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                 ],
               ),
@@ -129,7 +127,10 @@ class DashboardContent extends StatelessWidget {
 
             // Overview Container
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
+              padding: const EdgeInsets.symmetric(
+                vertical: 24.0,
+                horizontal: 16.0,
+              ),
               decoration: BoxDecoration(
                 color: primaryGreen.withAlpha(26),
                 borderRadius: BorderRadius.circular(12),
@@ -149,7 +150,7 @@ class DashboardContent extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildOverviewItem('12', 'Routes'),
+                      _buildOverviewItem('12', 'Schedules'), // updated
                       _buildOverviewItem('86', 'Reports'),
                       _buildOverviewItem('14', 'Pending'),
                     ],
@@ -176,44 +177,67 @@ class DashboardContent extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _buildQuickActionButton(context, icon: Icons.map_outlined, label: 'Routes', index: 1),
-                _buildQuickActionButton(context, icon: Icons.campaign_outlined, label: 'Announce', index: 3),
-                _buildQuickActionButton(context, icon: Icons.folder_open_outlined, label: 'Reports', index: 2),
-                _buildQuickActionButton(context, icon: Icons.person_outline, label: 'Profile', index: 4),
+                _buildQuickActionButton(
+                  context,
+                  icon: Icons.schedule_outlined, // updated
+                  label: 'Schedule', // updated
+                  index: 1,
+                ),
+                _buildQuickActionButton(
+                  context,
+                  icon: Icons.campaign_outlined,
+                  label: 'Announce',
+                  index: 3,
+                ),
+                _buildQuickActionButton(
+                  context,
+                  icon: Icons.folder_open_outlined,
+                  label: 'Reports',
+                  index: 2,
+                ),
+                _buildQuickActionButton(
+                  context,
+                  icon: Icons.person_outline,
+                  label: 'Profile',
+                  index: 4,
+                ),
               ],
             ),
             const SizedBox(height: 32),
 
-            // Active Routes Section
+            // Active Schedule Section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Active Routes',
+                  'Active Schedules', // updated
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: primaryGreen,
                   ),
                 ),
-                 TextButton(
+                TextButton(
                   onPressed: () => onTabTapped?.call(1),
                   child: Text(
                     'View All',
-                    style: TextStyle(color: primaryGreen, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: primaryGreen,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            _buildActiveRouteCard(
-              routeName: 'North District',
+            _buildActiveScheduleCard(
+              scheduleName: 'North District',
               wasteType: 'Recyclable',
               timePeriod: '6:00 AM - 10:00 AM',
               status: 'Ongoing',
             ),
-            _buildActiveRouteCard(
-              routeName: 'South Commercial Zone',
+            _buildActiveScheduleCard(
+              scheduleName: 'South Commercial Zone',
               wasteType: 'Biodegradable',
               timePeriod: '8:00 AM - 12:00 PM',
               status: 'Starting Soon',
@@ -224,7 +248,7 @@ class DashboardContent extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                 Text(
+                Text(
                   'Recent Reports',
                   style: TextStyle(
                     fontSize: 24,
@@ -233,10 +257,13 @@ class DashboardContent extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                   onPressed: () => onTabTapped?.call(2),
+                  onPressed: () => onTabTapped?.call(2),
                   child: Text(
                     'View All',
-                    style: TextStyle(color: primaryGreen, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: primaryGreen,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -254,7 +281,7 @@ class DashboardContent extends StatelessWidget {
               title: 'Overflowing bin at Central Park',
               subtitle: 'Reported 2 hours ago',
             ),
-            const SizedBox(height: 20), // Padding at the end
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -273,18 +300,17 @@ class DashboardContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-          ),
-        ),
+        Text(label, style: const TextStyle(fontSize: 16, color: Colors.grey)),
       ],
     );
   }
 
-  Widget _buildQuickActionButton(BuildContext context, {required IconData icon, required String label, required int index}) {
+  Widget _buildQuickActionButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required int index,
+  }) {
     return GestureDetector(
       onTap: () => onTabTapped?.call(index),
       child: Container(
@@ -300,19 +326,16 @@ class DashboardContent extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
           ],
         ),
       ),
     );
   }
-  
-  Widget _buildActiveRouteCard({
-    required String routeName,
+
+  Widget _buildActiveScheduleCard({
+    required String scheduleName,
     required String wasteType,
     required String timePeriod,
     required String status,
@@ -323,7 +346,7 @@ class DashboardContent extends StatelessWidget {
     } else if (wasteType == 'Biodegradable') {
       wasteColor = Colors.green;
     } else if (wasteType == 'Non-Biodegradable') {
-        wasteColor = Colors.black87;
+      wasteColor = Colors.black87;
     }
 
     return Card(
@@ -340,7 +363,7 @@ class DashboardContent extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    routeName,
+                    scheduleName,
                     style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
@@ -351,7 +374,9 @@ class DashboardContent extends StatelessWidget {
                 Text(
                   status,
                   style: TextStyle(
-                    color: status == 'Ongoing' ? primaryGreen : Colors.orangeAccent,
+                    color: status == 'Ongoing'
+                        ? primaryGreen
+                        : Colors.orangeAccent,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -362,14 +387,20 @@ class DashboardContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: wasteColor.withAlpha(50),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     wasteType,
-                    style: TextStyle(color: wasteColor, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      color: wasteColor,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
                 const Spacer(),
@@ -384,17 +415,29 @@ class DashboardContent extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard({required IconData icon, required Color iconColor, required String title, required String subtitle}) {
+  Widget _buildInfoCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+  }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 10,
+          horizontal: 15,
+        ),
         leading: Icon(icon, color: iconColor, size: 32),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+        trailing: const Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: Colors.grey,
+        ),
       ),
     );
   }
