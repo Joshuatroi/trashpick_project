@@ -43,9 +43,6 @@ class AuthService {
     required String userType,
   }) async {
     try {
-      print('🔵 [AUTH] Step 1: Attempting to sign in');
-      print('   Email: $email');
-      print('   Selected userType: $userType');
 
       // 1. Authenticate with Firebase Auth
       final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
@@ -55,22 +52,13 @@ class AuthService {
 
       final user = userCredential.user;
       if (user == null) {
-        print('🔴 [AUTH] Step 2: User is null after authentication');
         throw FirebaseAuthException(code: 'user-not-found');
       }
 
-      print('🟢 [AUTH] Step 2: Firebase Auth successful');
-      print('   User UID: ${user.uid}');
-
       // 2. Authorize from Firestore IMMEDIATELY
-      print('🔵 [AUTH] Step 3: Fetching user document from Firestore...');
       final userDoc = await _firestore.collection('users').doc(user.uid).get();
 
-      print('🔵 [AUTH] Step 4: Firestore query completed');
-      print('   Document exists: ${userDoc.exists}');
-
       if (!userDoc.exists) {
-        print('🔴 [AUTH] Step 5: User document does NOT exist in Firestore');
         await _firebaseAuth.signOut();
         throw FirebaseAuthException(
           code: 'user-data-not-found',
@@ -78,22 +66,12 @@ class AuthService {
         );
       }
 
-      print('🟢 [AUTH] Step 5: User document exists in Firestore');
-
       final userData = userDoc.data();
-      print('   Full user data: $userData');
 
       final dbUserType = userData?['userType'];
-      print('   Database userType: "$dbUserType" (type: ${dbUserType.runtimeType})');
-      print('   Selected userType: "$userType" (type: ${userType.runtimeType})');
 
       // 3. Compare roles
-      print('🔵 [AUTH] Step 6: Comparing roles...');
       if (dbUserType != userType) {
-        print('🔴 [AUTH] Step 7: ROLE MISMATCH!');
-        print('   Expected: "$userType"');
-        print('   Found in DB: "$dbUserType"');
-        print('   Signing user out...');
 
         await _firebaseAuth.signOut();
         throw FirebaseAuthException(
@@ -102,15 +80,9 @@ class AuthService {
         );
       }
 
-      print('🟢 [AUTH] Step 7: Role matches! Login successful.');
-      print('   ✅ User authenticated and authorized as $userType');
-
-    } on FirebaseAuthException catch (e) {
-      print('🔴 [AUTH] FirebaseAuthException caught: ${e.code}');
-      print('   Message: ${e.message}');
+    } on FirebaseAuthException {
       rethrow;
     } catch (e) {
-      print('🔴 [AUTH] Unexpected error: $e');
       rethrow;
     }
   }
@@ -118,4 +90,119 @@ class AuthService {
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
   }
+
+  /// Get user profile data from Firestore
+  /// Returns a Map with user data or null if not found
+  Future<Map<String, dynamic>?> getUserProfile() async {
+    try {
+      final user = currentUser;
+      if (user == null) return null;
+
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+
+      if (!userDoc.exists) return null;
+
+      // Merge Firestore data with auth data
+      final data = userDoc.data() ?? {};
+      data['email'] = user.email; // Always get email from Auth
+
+      return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Update user profile in Firestore
+  /// Updates fullName and phone number
+  Future<void> updateUserProfile({
+    required String fullName,
+    required String phone,
+  }) async {
+    try {
+      final user = currentUser;
+      if (user == null) {
+        throw FirebaseAuthException(
+          code: 'no-user',
+          message: 'No user is currently signed in',
+        );
+      }
+
+      await _firestore.collection('users').doc(user.uid).update({
+        'fullName': fullName.trim(),
+        'phone': phone.trim(),
+        'updatedAt': Timestamp.now(),
+      });
+
+
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Change user password
+  /// Requires reauthentication with current password
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final user = currentUser;
+      if (user == null || user.email == null) {
+        throw FirebaseAuthException(
+          code: 'no-user',
+          message: 'No user is currently signed in',
+        );
+      }
+
+      // Reauthenticate user with current password
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+
+      // Update password
+      await user.updatePassword(newPassword);
+    } on FirebaseAuthException catch (e) {
+      // Re-throw with more specific error messages
+      switch (e.code) {
+        case 'wrong-password':
+          throw FirebaseAuthException(
+            code: 'wrong-password',
+            message: 'Current password is incorrect',
+          );
+        case 'weak-password':
+          throw FirebaseAuthException(
+            code: 'weak-password',
+            message: 'New password is too weak',
+          );
+        case 'requires-recent-login':
+          throw FirebaseAuthException(
+            code: 'requires-recent-login',
+            message: 'Please log out and log back in, then try again',
+          );
+        default:
+          rethrow;
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Stream of user profile data
+  /// Useful for real-time updates in the UI
+  Stream<Map<String, dynamic>?> getUserProfileStream() {
+    final user = currentUser;
+    if (user == null) return Stream.value(null);
+
+    return _firestore.collection('users').doc(user.uid).snapshots().map((doc) {
+      if (!doc.exists) return null;
+
+      final data = doc.data() ?? {};
+      data['email'] = user.email;
+      return data;
+    });
+  }
+
 }

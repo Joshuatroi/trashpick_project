@@ -32,22 +32,6 @@ class _OfficialProfilePageState extends State<OfficialProfilePage> {
         : Colors.grey[800]!;
 
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: textColor),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          "Account",
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
@@ -178,32 +162,6 @@ class _OfficialProfilePageState extends State<OfficialProfilePage> {
             const SizedBox(height: 30),
           ],
         ),
-      ),
-
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: 3,
-        selectedItemColor: const Color(0xFF1CC961),
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            label: "Dashboard",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.alt_route_outlined),
-            label: "Routes",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.campaign_outlined),
-            label: "Announce",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: "Profile",
-          ),
-        ],
       ),
     );
   }

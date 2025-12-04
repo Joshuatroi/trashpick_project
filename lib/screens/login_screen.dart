@@ -2,8 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:trashpick_project/screens/official_dashboard.dart';
 import '../services/auth_service.dart';
 import 'signup_screen.dart';
+import 'resident_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -52,8 +54,24 @@ class _LoginScreenState extends State<LoginScreen> {
       await _authService.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
-        userType: _selectedUserType, // This will now have the correct value
+        userType: _selectedUserType,
       );
+
+      if (!mounted) return;
+
+      if (_selectedUserType == 'Resident') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ResidentScreen()),
+        );
+      } else if (_selectedUserType == 'Official') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const OfficialDashboard()),
+        );
+      }
+
+      // I can add 'else-if' logic here for 'Admin' later on
     } on FirebaseAuthException catch (e) {
       String message;
       switch (e.code) {
@@ -86,14 +104,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // --- CORRECTED HELPER METHOD --- 
-  // Moved out of the build method to be a member of the State class.
   Widget _buildUserTypeButton(String userType) {
     bool isSelected = _selectedUserType == userType;
     return Expanded(
       child: ElevatedButton(
         onPressed: () {
-          // This uses the main widget's setState, which correctly rebuilds the entire screen.
           setState(() {
             _selectedUserType = userType;
           });
@@ -162,8 +177,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // --- CORRECTED BUTTON ROW ---
-                // Removed the faulty StatefulBuilder and now using the helper method directly.
                 Row(
                   children: [
                     _buildUserTypeButton('Resident'),
@@ -238,75 +251,74 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildLoginForm() {
-    // The ValueKey now works because the parent widget is properly rebuilding.
     return Column(
       key: ValueKey(_selectedUserType),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-          const Text(
-            'Email',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Color(0xFF2D3748)),
+        const Text(
+          'Email',
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Color(0xFF2D3748)),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+          decoration: InputDecoration(
+            hintText: 'Enter your email',
+            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+            filled: true,
+            fillColor: const Color(0xFFF7FAFC),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(
-              hintText: 'Enter your email',
-              hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-              filled: true,
-              fillColor: const Color(0xFFF7FAFC),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
+        const SizedBox(height: 20),
+        const Text(
+          'Password',
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Color(0xFF2D3748)),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _passwordController,
+          obscureText: _obscurePassword,
+          decoration: InputDecoration(
+            hintText: 'Enter your password',
+            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+            filled: true,
+            fillColor: const Color(0xFFF7FAFC),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            suffixIcon: IconButton(
+              icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: Colors.grey[600]),
+              onPressed: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
             ),
           ),
-          const SizedBox(height: 20),
-          const Text(
-            'Password',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Color(0xFF2D3748)),
+        ),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () => print('Forgot password tapped'),
+            child: const Text('Forgot Password?', style: TextStyle(color: Color(0xFF00A651), fontSize: 14, fontWeight: FontWeight.w500)),
           ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _passwordController,
-            obscureText: _obscurePassword,
-            decoration: InputDecoration(
-              hintText: 'Enter your password',
-              hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-              filled: true,
-              fillColor: const Color(0xFFF7FAFC),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              suffixIcon: IconButton(
-                icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: Colors.grey[600]),
-                onPressed: () {
-                  setState(() {
-                    _obscurePassword = !_obscurePassword;
-                  });
-                },
-              ),
-            ),
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton(
+          onPressed: _isLoading ? null : _handleLogin,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF00A651),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            padding: const EdgeInsets.symmetric(vertical: 16),
           ),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () => print('Forgot password tapped'),
-              child: const Text('Forgot Password?', style: TextStyle(color: Color(0xFF00A651), fontSize: 14, fontWeight: FontWeight.w500)),
-            ),
-          ),
-          const SizedBox(height: 8),
-          ElevatedButton(
-            onPressed: _isLoading ? null : _handleLogin,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00A651),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-            child: _isLoading
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                : const Text('Login'),
-          ),
+          child: _isLoading
+              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+              : const Text('Login'),
+        ),
       ],
     );
   }

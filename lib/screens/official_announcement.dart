@@ -1,11 +1,39 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
-// A simple data class for holding announcement information
+// Updated data class to match the Firestore 'announcements' collection
 class Announcement {
-  final String text;
-  final String time;
+  final String id;
+  final String title;
+  final String content;
+  final DateTime postedAt;
+  final String postedBy;
+  final String barangayName;
 
-  Announcement({required this.text, required this.time});
+  Announcement({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.postedAt,
+    required this.postedBy,
+    required this.barangayName,
+  });
+
+  // Factory to create an Announcement from a Firestore document
+  factory Announcement.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data()!;
+    return Announcement(
+      id: doc.id,
+      title: data['title'] ?? 'No Title',
+      content: data['content'] ?? 'No Content',
+      postedAt: (data['postedAt'] as Timestamp).toDate(),
+      postedBy: data['postedBy'] ?? 'Unknown',
+      barangayName: data['barangayName'] ?? 'Unknown',
+    );
+  }
 }
 
 class OfficialAnnouncement extends StatefulWidget {
@@ -16,16 +44,31 @@ class OfficialAnnouncement extends StatefulWidget {
 }
 
 class _OfficialAnnouncementState extends State<OfficialAnnouncement> {
-  final TextEditingController _announcementController = TextEditingController();
-  final List<Announcement> _previousAnnouncements = [
-    Announcement(text: 'Garbage collection for the North District will be delayed by one hour on Friday.', time: 'Posted 1 day ago'),
-    Announcement(text: 'A special collection for e-waste will be held this Saturday. Please leave items on the curb by 8 AM.', time: 'Posted 3 days ago'),
-  ];
-
+  final _titleController = TextEditingController();
+  final _contentController = TextEditingController();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final Color primaryGreen = const Color(0xFF00A651);
+  Timer? _timer;
 
+  @override
+  void initState() {
+    super.initState();
+    // Rebuild the widget every minute to update the 'timeago' text
+    _timer = Timer.periodic(const Duration(minutes: 1), (Timer t) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  // Shows confirmation before posting
   void _showConfirmationDialog() {
-    if (_announcementController.text.isEmpty) return; // Don't show if empty
+    if (_titleController.text.isEmpty || _contentController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in both title and content.')),
+      );
+      return;
+    }
 
     showDialog(
       context: context,
@@ -39,7 +82,10 @@ class _OfficialAnnouncementState extends State<OfficialAnnouncement> {
               child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
             ),
             TextButton(
-              onPressed: _postAnnouncement,
+              onPressed: () {
+                Navigator.of(context).pop(); // Close confirmation dialog
+                _postAnnouncement();
+              },
               child: Text('Post', style: TextStyle(color: primaryGreen, fontWeight: FontWeight.bold)),
             ),
           ],
@@ -48,23 +94,81 @@ class _OfficialAnnouncementState extends State<OfficialAnnouncement> {
     );
   }
 
-  void _postAnnouncement() {
-    setState(() {
-      _previousAnnouncements.insert(
-        0,
-        Announcement(text: _announcementController.text, time: 'Posted just now'),
+  // Saves the new announcement to Firestore
+  Future<void> _postAnnouncement() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final announcementData = {
+      'title': _titleController.text,
+      'content': _contentController.text,
+      'postedAt': Timestamp.now(),
+      'postedBy': currentUser?.displayName ?? currentUser?.email ?? 'Official',
+      'barangayName': 'Pardo',
+    };
+
+    try {
+      await _firestore.collection('announcements').add(announcementData);
+      _titleController.clear();
+      _contentController.clear();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Announcement posted successfully!'), backgroundColor: Colors.green),
       );
-      _announcementController.clear();
-    });
-    Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Announcement posted successfully!'), backgroundColor: Colors.green),
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to post announcement: $e')),
+      );
+    }
+  }
+  
+  // Shows the full announcement and delete option in a dialog
+  void _showAnnouncementDetails(Announcement announcement) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(announcement.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(announcement.content),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close details dialog first
+              _showDeleteConfirmation(announcement.id);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
+  }
+
+  // Shows confirmation before deleting an announcement
+  Future<void> _showDeleteConfirmation(String announcementId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Deletion'),
+        content: const Text('Are you sure you want to delete this announcement?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _firestore.collection('announcements').doc(announcementId).delete();
+    }
   }
 
   @override
   void dispose() {
-    _announcementController.dispose();
+    _timer?.cancel(); // Cancel the timer
+    _titleController.dispose();
+    _contentController.dispose();
     super.dispose();
   }
 
@@ -98,10 +202,20 @@ class _OfficialAnnouncementState extends State<OfficialAnnouncement> {
           const Text('New Announcement:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           TextField(
-            controller: _announcementController,
+            controller: _titleController,
+            decoration: const InputDecoration(
+              hintText: 'Enter the title...',
+              border: OutlineInputBorder(),
+              fillColor: Colors.white,
+              filled: true,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _contentController,
             maxLines: 5,
             decoration: const InputDecoration(
-              hintText: 'Type your announcement here...',
+              hintText: 'Type your announcement content here...',
               border: OutlineInputBorder(),
               fillColor: Colors.white,
               filled: true,
@@ -125,26 +239,49 @@ class _OfficialAnnouncementState extends State<OfficialAnnouncement> {
   }
 
   Widget _buildPreviousAnnouncementsList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _previousAnnouncements.length,
-      itemBuilder: (context, index) {
-        final announcement = _previousAnnouncements[index];
-        return Card(
-          color: primaryGreen.withAlpha(26),
-          margin: const EdgeInsets.only(bottom: 12),
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-            title: Text(announcement.text, style: const TextStyle(fontSize: 16)),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Text(announcement.time, style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey[600])),
-            ),
-            isThreeLine: true,
-          ),
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: _firestore.collection('announcements').orderBy('postedAt', descending: true).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text('No announcements yet.'));
+        }
+
+        final announcements = snapshot.data!.docs.map((doc) => Announcement.fromFirestore(doc)).toList();
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: announcements.length,
+          itemBuilder: (context, index) {
+            final announcement = announcements[index];
+            return Card(
+              color: primaryGreen.withAlpha(26),
+              margin: const EdgeInsets.only(bottom: 12),
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              child: ListTile(
+                onTap: () => _showAnnouncementDetails(announcement),
+                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                title: Text(announcement.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    announcement.content,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.grey[800]),
+                  ),
+                ),
+                trailing: Text(
+                  timeago.format(announcement.postedAt),
+                  style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey[600], fontSize: 12),
+                ),
+              ),
+            );
+          },
         );
       },
     );
